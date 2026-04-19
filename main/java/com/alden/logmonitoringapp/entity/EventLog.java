@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Table(name = "event_logs")
 public class EventLog {
 
-    protected EventLog(){}; //no arg
+    protected EventLog(){} //no arg
 
     public EventLog(String title, Severity severity, String sourceName,
                     String description, String originIp, LocalDateTime eventTimestamp) {
@@ -28,10 +28,9 @@ public class EventLog {
 
     //many events to one user
     @ManyToOne(fetch = FetchType.LAZY) //User row isn't loaded unless getUser() is called.
-    @JoinColumn(name = "user_id")      //Creates the user_id column in event_logs.
+    @JoinColumn(name = "user_id", nullable = false)      //Creates the user_id column in event_logs.
     private User user;
 
-    public void setUser(User user) { this.user = user; }
 
     //DB can't store an instance of a class.
     //Storing explicitly as string is clearer than EnumType.ORDINAL (0,1,2...).
@@ -49,12 +48,16 @@ public class EventLog {
     private String sourceName;  //where log originated
     private String originIp;
     private LocalDateTime eventTimestamp; //when event was detected by sources (will be optional)
+    @Column(nullable = false)
     private LocalDateTime timeCreated;    //when log was added in app
 
-    @PrePersist
+    @PrePersist //Calls it automatically before insertion.
     protected void onCreate() {
         this.timeCreated = LocalDateTime.now();
     }
+
+
+    public void setUser(User user) { this.user = user; }
 
     public Long getId() { return id; }
     public User getUser() { return user; }
