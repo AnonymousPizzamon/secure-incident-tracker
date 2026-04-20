@@ -32,7 +32,7 @@ public class EventLog {
     private User user;
 
 
-    //DB can't store an instance of a class.
+    //Db can't store type "Severity", need to convert to acceptable datatype.
     //Storing explicitly as string is clearer than EnumType.ORDINAL (0,1,2...).
     @Column (nullable = false)
     @Enumerated(EnumType.STRING)
@@ -57,7 +57,7 @@ public class EventLog {
     }
 
 
-    public void setUser(User user) { this.user = user; }
+    public void setUser(User user) { this.user = user; } //need to set user for each EventLog
 
     public Long getId() { return id; }
     public User getUser() { return user; }

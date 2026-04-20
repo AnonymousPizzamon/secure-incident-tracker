@@ -1,0 +1,18 @@
+package com.alden.logmonitoringapp.dto.auth;
+
+public class RegisterResponse {
+
+    private Long id;
+    private String username;
+    private String email;
+
+    public RegisterResponse(Long id, String username, String email) {
+        this.id = id;
+        this.username = username;
+        this.email = email; //null is valid if no email given
+    }
+
+    public Long getId() { return id; }
+    public String getUsername() { return username; }
+    public String getEmail() { return email; }
+}
