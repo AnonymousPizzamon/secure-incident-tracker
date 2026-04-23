@@ -1,5 +1,7 @@
 package com.alden.logmonitoringapp.dto.auth;
 
+// Service builds this from the saved User entity and returns it to the controller.
+// Never includes sensitive fields like passwordHash.
 public class RegisterResponse {
 
     private Long id;

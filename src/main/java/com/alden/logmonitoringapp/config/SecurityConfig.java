@@ -9,7 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class SecurityConfig {
 
     //Bean tells Spring to call this method once at startup, and register the object it returns in the application context.
-    //Any other class that needs a PasswordEncoder can then ask Spring for it via @Autowired (dependency injection).
+    //Any other class that needs a PasswordEncoder can then inject it with @Autowired or constructor injection (better).
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

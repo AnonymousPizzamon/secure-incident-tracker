@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+//Provides info to Service class which builds User
 public class RegisterRequest {
 
     @NotBlank(message = "Username required")
