@@ -14,6 +14,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     //Get userRepository object and get password encoder
+    //Constructor injection
     public UserService(UserAccountRepository userAccounts, PasswordEncoder encoder) {
         this.userRepository = userAccounts;
         this.passwordEncoder = encoder;
