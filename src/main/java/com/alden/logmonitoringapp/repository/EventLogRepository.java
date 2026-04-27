@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface EventLogRepository extends JpaRepository<EventLog, Long> {
 /**
  *
- * JpaRepository<EventLog, Long> gives you save, findById, findAll, delete, and count for free.
+ * JpaRepository<EventLog, Long> gives: save, findById, findAll, delete, and count.
  * Custom queries for filtering come in a later step.
  */
 

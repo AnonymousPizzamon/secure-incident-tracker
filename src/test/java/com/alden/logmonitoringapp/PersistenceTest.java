@@ -18,9 +18,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) //H2 db is default, so this makes it so it uses our postgres db
 class PersistenceTest {
 
-    @Autowired //needed or else these would be null, can't create object from interface.
+    @Autowired // Spring Data JPA creates implementations for these repository interfaces, this injects them, so they won't be null.
     private UserAccountRepository userRepository;
-
     @Autowired
     private EventLogRepository eventLogRepository;
 

@@ -7,7 +7,7 @@ import com.alden.logmonitoringapp.repository.UserAccountRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-@Service //user on service classes in Spring
+@Service //used on service classes in Spring
 public class UserService {
 
     private final UserAccountRepository userRepository;
