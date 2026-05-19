@@ -36,6 +36,8 @@ public class SecurityConfig {
             );
 
         return http.build();
+        // reference:
+        // https://docs.spring.io/spring-security/reference/servlet/authorization/authorize-http-requests.html#authorize-requests
     }
 }
 
