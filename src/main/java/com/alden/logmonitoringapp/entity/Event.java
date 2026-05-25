@@ -7,12 +7,12 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "event_logs")
-public class EventLog {
+public class Event {
 
-    protected EventLog(){} //no arg
+    protected Event(){} //no arg
 
-    public EventLog(String title, IncidentStatus status, Severity severity, String sourceName,
-                    String description, String originIp, LocalDateTime eventTimestamp) {
+    public Event(String title, IncidentStatus status, Severity severity, String sourceName,
+                 String description, String originIp, LocalDateTime eventTimestamp) {
         this.title = title;
         this.incidentStatus = status;
         this.severity = severity;
