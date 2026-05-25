@@ -20,7 +20,7 @@ public class User {
         this.username = username;
         this.passwordHash = passwordHash;
         this.createdAt = LocalDateTime.now();
-    } //Since email will be optional, now we don't have to put null if no email
+    } //Since email will be optional
 
     @Id //primary key
     @GeneratedValue(strategy = GenerationType.IDENTITY) //auto assign value

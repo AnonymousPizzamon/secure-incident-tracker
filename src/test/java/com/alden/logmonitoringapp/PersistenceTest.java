@@ -1,6 +1,7 @@
 package com.alden.logmonitoringapp;
 
 import com.alden.logmonitoringapp.entity.EventLog;
+import com.alden.logmonitoringapp.entity.IncidentStatus;
 import com.alden.logmonitoringapp.entity.Severity;
 import com.alden.logmonitoringapp.entity.User;
 import com.alden.logmonitoringapp.repository.EventLogRepository;
@@ -34,6 +35,7 @@ class PersistenceTest {
         // create an event, assign the owner, save it
         EventLog event = new EventLog(
                 "Test Event",
+                IncidentStatus.IN_PROGRESS,
                 Severity.HIGH,
                 "server-01",
                 "Something happened on the server",

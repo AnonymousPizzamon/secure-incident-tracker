@@ -11,9 +11,10 @@ public class EventLog {
 
     protected EventLog(){} //no arg
 
-    public EventLog(String title, Severity severity, String sourceName,
+    public EventLog(String title, IncidentStatus status, Severity severity, String sourceName,
                     String description, String originIp, LocalDateTime eventTimestamp) {
         this.title = title;
+        this.incidentStatus = status;
         this.severity = severity;
         this.sourceName = sourceName;
         this.description = description;
@@ -38,6 +39,10 @@ public class EventLog {
     @Enumerated(EnumType.STRING)
     private Severity severity;
 
+    @Column (nullable = false)
+    @Enumerated(EnumType.STRING)
+    private IncidentStatus incidentStatus;
+
     //Default type String changed to TEXT as stored type in database.
     //String has 255 char limit vs text which is unlimited.
     @Column(columnDefinition = "TEXT")
@@ -45,11 +50,13 @@ public class EventLog {
 
     @Column(nullable = false)
     private String title;
+    @Column(nullable = false)
     private String sourceName;  //where log originated
     private String originIp;
     private LocalDateTime eventTimestamp; //when event was detected by sources (will be optional)
     @Column(nullable = false)
     private LocalDateTime timeCreated;    //when log was added in app
+
 
     @PrePersist //Calls it automatically before insertion.
     protected void onCreate() {
@@ -61,6 +68,7 @@ public class EventLog {
 
     public Long getId() { return id; }
     public User getUser() { return user; }
+    public IncidentStatus getIncidentStatus() { return incidentStatus; }
     public Severity getSeverity() { return severity; }
     public String getDescription() { return description; }
     public String getTitle() { return title; }
