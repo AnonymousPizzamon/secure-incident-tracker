@@ -31,7 +31,7 @@ public class SecurityConfig {
 
             //define which endpoints are public and which require authentication.
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/register", "/auth/login").permitAll() //public endpoints
+                .requestMatchers("/auth/register", "/auth/login", "/error" ).permitAll() //public endpoints
                 .anyRequest().authenticated()                                  //everything else requires a valid token
             );
 
