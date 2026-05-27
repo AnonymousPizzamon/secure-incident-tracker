@@ -2,7 +2,6 @@ package com.alden.logmonitoringapp.entity;
 
 
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -50,7 +49,7 @@ public class Event {
 
     @Column(nullable = false)
     private String title;
-    @Column(nullable = false)
+
     private String sourceName;  //where log originated
     private String originIp;
     private LocalDateTime eventTimestamp; //when event was detected by sources (will be optional)

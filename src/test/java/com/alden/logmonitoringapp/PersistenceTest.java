@@ -1,10 +1,10 @@
 package com.alden.logmonitoringapp;
 
-import com.alden.logmonitoringapp.entity.EventLog;
+import com.alden.logmonitoringapp.entity.Event;
 import com.alden.logmonitoringapp.entity.IncidentStatus;
 import com.alden.logmonitoringapp.entity.Severity;
 import com.alden.logmonitoringapp.entity.User;
-import com.alden.logmonitoringapp.repository.EventLogRepository;
+import com.alden.logmonitoringapp.repository.EventRepository;
 import com.alden.logmonitoringapp.repository.UserAccountRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +22,7 @@ class PersistenceTest {
     @Autowired // Spring Data JPA creates implementations for these repository interfaces, this injects them, so they won't be null.
     private UserAccountRepository userRepository;
     @Autowired
-    private EventLogRepository eventLogRepository;
+    private EventRepository eventRepository;
 
 
     @Test //for test methods
@@ -33,7 +33,7 @@ class PersistenceTest {
         userRepository.save(user);
 
         // create an event, assign the owner, save it
-        EventLog event = new EventLog(
+        Event event = new Event(
                 "Test Event",
                 IncidentStatus.IN_PROGRESS,
                 Severity.HIGH,
@@ -43,10 +43,10 @@ class PersistenceTest {
                 LocalDateTime.now()
         );
         event.setUser(user);
-        eventLogRepository.save(event);
+        eventRepository.save(event);
 
         // retrieve it by id and assert the values are correct
-        EventLog found = eventLogRepository.findById(event.getId()).orElseThrow();
+        Event found = eventRepository.findById(event.getId()).orElseThrow();
         assertThat(found.getTitle()).isEqualTo("Test Event");
         assertThat(found.getSeverity()).isEqualTo(Severity.HIGH);
         assertThat(found.getUser().getId()).isEqualTo(user.getId());
