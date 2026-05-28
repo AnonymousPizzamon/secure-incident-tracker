@@ -31,7 +31,7 @@
     </properties>
     <dependencies>
         <!--
-  jjwt is split into three artifacts (as of 0.11+):
+  jjwt is split into three artifacts (as of 0.11+): https://github.com/jwtk/jjwt
   - jjwt-api:     public API — compile scope (we reference these types directly)
   - jjwt-impl:    implementation — runtime only (never reference internals directly)
   - jjwt-jackson: JSON support via Jackson — runtime only (Spring Boot already has Jackson)
