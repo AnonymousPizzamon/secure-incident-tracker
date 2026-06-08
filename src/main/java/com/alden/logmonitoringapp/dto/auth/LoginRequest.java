@@ -3,7 +3,7 @@ package com.alden.logmonitoringapp.dto.auth;
 import jakarta.validation.constraints.NotBlank;
 
 
-// It's good to separate login from request dto's so they can be modified individually and because they are separate processes.
+//login + registration are two separate processes, so we will keep the dtos separate as well
 
 public class LoginRequest {
 
