@@ -1,5 +1,7 @@
 package com.alden.logmonitoringapp.controller;
 
+import com.alden.logmonitoringapp.dto.auth.LoginRequest;
+import com.alden.logmonitoringapp.dto.auth.LoginResponse;
 import com.alden.logmonitoringapp.dto.auth.RegisterRequest;
 import com.alden.logmonitoringapp.dto.auth.RegisterResponse;
 import com.alden.logmonitoringapp.service.UserService;
@@ -29,5 +31,11 @@ public class AuthController {
     @ResponseStatus(HttpStatus.CREATED) //sends back HTTP 201 instead of the default 200.
     public RegisterResponse register(@Valid @RequestBody RegisterRequest request) {
         return userService.register(request); //controller calls service and returns the result.
+    }
+
+    @PostMapping("/login")
+    // no @ResponseStatus. login returns the default HTTP 200, not 201, because nothing new is created
+    public LoginResponse login(@Valid @RequestBody LoginRequest request) {
+        return userService.login(request);  // credential check and token generation happen in the service
     }
 }
