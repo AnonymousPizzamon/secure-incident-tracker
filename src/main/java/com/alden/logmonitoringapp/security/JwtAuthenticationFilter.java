@@ -18,7 +18,7 @@ import java.io.IOException;
 // This class intercepts incoming req's and checks for a token
 
 @Component                              // https://docs.spring.io/spring-security/reference/servlet/architecture.html#servlet-filters-review
-public class JwtAuthenticationFilter extends OncePerRequestFilter { //OncePerRequestFilter is spring security's base class for request filters
+public class JwtAuthenticationFilter extends OncePerRequestFilter { // OncePerRequestFilter is spring security's base class for request filters
     private final JwtService jwtService;
     private final AppUserDetailsService userDetailsService;
 

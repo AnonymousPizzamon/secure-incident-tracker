@@ -4,10 +4,10 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "users") //change table name to users
+@Table(name = "users") // change table name to users
 public class User {
 
-    protected User() {} //jpa requires no arg constructor
+    protected User() {} // jpa requires no arg constructor
 
 
     public User(String email, String username, String passwordHash) {
@@ -17,8 +17,8 @@ public class User {
         this.createdAt = LocalDateTime.now();
     }
 
-    @Id //primary key
-    @GeneratedValue(strategy = GenerationType.IDENTITY) //auto assign value
+    @Id // primary key
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // auto assign value
     private Long id;
 
     @Column(nullable = false, unique = true)

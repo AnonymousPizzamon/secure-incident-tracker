@@ -34,7 +34,7 @@ public class AppUserDetailsService implements UserDetailsService {
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getUsername())
                 .password(user.getPassword())
-                .authorities(Collections.emptyList()) //establishes role, no roles in this app so .emptylist()
+                .authorities(Collections.emptyList()) // establishes role, no roles in this app so .emptylist()
                 .build();
     }
 }

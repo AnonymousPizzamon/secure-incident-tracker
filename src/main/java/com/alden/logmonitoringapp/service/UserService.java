@@ -12,7 +12,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-@Service //used on service classes in Spring
+@Service // used on service classes in Spring
 public class UserService {
 
     private final UserAccountRepository userRepository;
@@ -20,8 +20,8 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
 
-    //Get userRepository object and get password encoder
-    //Constructor injection
+    // Get userRepository object and get password encoder
+    // Constructor injection
     public UserService(UserAccountRepository userAccounts, PasswordEncoder encoder,
                        AuthenticationManager authenticationManager, JwtService jwtService) {
         this.userRepository = userAccounts;
@@ -32,20 +32,20 @@ public class UserService {
 
     public RegisterResponse register(RegisterRequest request) {
 
-        //reject if email already registered
+        // reject if email already registered
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email is already in use");
         }
-        //reject if username taken
+        // reject if username taken
         if(userRepository.existsByUsername(request.getUsername())) {
             throw new IllegalArgumentException("Username is already in use");
         }
 
-        //Create and save user
+        // Create and save user
         User user = new User(request.getEmail(), request.getUsername(), passwordEncoder.encode(request.getPassword()));
-        User saved = userRepository.save(user); //.save generates the ID
+        User saved = userRepository.save(user); // .save generates the ID
 
-        //return response
+        // return response
         return new RegisterResponse(saved.getId(), saved.getUsername(), saved.getEmail());
     }
 

@@ -3,7 +3,7 @@ package com.alden.logmonitoringapp.dto.auth;
 import jakarta.validation.constraints.NotBlank;
 
 
-//login + registration are two separate processes, so we will keep the dtos separate as well
+// login + registration are two separate processes, so we will keep the dtos separate as well
 
 public class LoginRequest {
 

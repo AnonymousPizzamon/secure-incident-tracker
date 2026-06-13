@@ -12,7 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-@Configuration //needed when Bean definition is used
+@Configuration // needed when Bean definition is used
 public class SecurityConfig {
 
 
@@ -54,7 +54,7 @@ public class SecurityConfig {
 
             // define which endpoints are public and which require authentication.
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/register", "/auth/login", "/error" ).permitAll() //public endpoints
+                .requestMatchers("/auth/register", "/auth/login", "/error" ).permitAll() // public endpoints
                 .anyRequest().authenticated()// everything else requires a valid token
             )
             // run the JWT filter before Spring's default username/password filter so the SecurityContext
