@@ -16,17 +16,14 @@ public class User {
         this.passwordHash = passwordHash;
         this.createdAt = LocalDateTime.now();
     }
-    public User(String username, String passwordHash) {
-        this.username = username;
-        this.passwordHash = passwordHash;
-        this.createdAt = LocalDateTime.now();
-    } //Since email will be optional
 
     @Id //primary key
     @GeneratedValue(strategy = GenerationType.IDENTITY) //auto assign value
     private Long id;
 
+    @Column(nullable = false, unique = true)
     private String email;
+
     private String username;
     private String passwordHash;
     private LocalDateTime createdAt;

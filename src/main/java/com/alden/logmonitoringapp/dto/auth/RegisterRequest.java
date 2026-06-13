@@ -14,8 +14,9 @@ public class RegisterRequest {
     @Size(min = 8, message = "Needs to be at least 8 characters")
     private String password;
 
+    @NotBlank(message = "Email required")
     @Email(message = "Must be a valid email address")
-    private String email; // optional so no @NotBlank
+    private String email;
 
     public RegisterRequest() { //required by JPA which creates empty object that is filled by the incoming HTTP JSON
     }

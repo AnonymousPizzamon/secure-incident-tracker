@@ -32,10 +32,15 @@ public class UserService {
 
     public RegisterResponse register(RegisterRequest request) {
 
+        //reject if email already registered
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("Email is already in use");
+        }
         //reject if username taken
-        if(userRepository.findByUsername(request.getUsername()).isPresent()) {
+        if(userRepository.existsByUsername(request.getUsername())) {
             throw new IllegalArgumentException("Username is already in use");
         }
+
         //Create and save user
         User user = new User(request.getEmail(), request.getUsername(), passwordEncoder.encode(request.getPassword()));
         User saved = userRepository.save(user); //.save generates the ID

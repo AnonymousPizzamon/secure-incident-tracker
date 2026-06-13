@@ -5,12 +5,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface UserAccountRepository extends JpaRepository<User, Long> {
-    //findBy + field (here the field is username from User) is a custom query method that JPA uses.
-    Optional<User> findByUsername(String username);
-    /**
-     returning User may cause null pointer exception,
-     so its better to make return type Optional.
-     Optional never returns null.
 
-    **/
+    // findBy + field returns the full entity — used by AppUserDetailsService which needs the User object
+    Optional<User> findByUsername(String username);
+    // Using Optional allows callers to handle the possibility of an absent value explicitly
+
+    boolean existsByUsername(String username);
+    boolean existsByEmail(String email);
+    // service only needs a true/false, using these methods makes DB ops less wasteful
+
 }
