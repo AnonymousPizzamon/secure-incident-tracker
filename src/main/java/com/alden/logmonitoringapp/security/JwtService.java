@@ -4,6 +4,7 @@ package com.alden.logmonitoringapp.security;
 // https://github.com/jwtk/jjwt
 
 import io.jsonwebtoken.Claims;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -23,8 +24,8 @@ public class JwtService {
     public JwtService(
             @Value("${jwt.secret}") String secret,
             @Value("${jwt.expiration}") long expirationMs) {
-
-        this.signingKey = Keys.hmacShaKeyFor(secret.getBytes());
+                                            // make it UTF-8 so a non-ASCII secret always encodes to the same bytes.
+        this.signingKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.expirationMs = expirationMs;
     }
 
