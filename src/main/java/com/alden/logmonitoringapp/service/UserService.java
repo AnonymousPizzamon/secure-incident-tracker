@@ -50,7 +50,7 @@ public class UserService {
     }
 
     // https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html
-    public LoginResponse login(LoginRequest request) {
+    public LoginResponse  login(LoginRequest request) {
         authenticationManager.authenticate( // authenticate() is from Spring Security's AuthenticationManager interface
                 // UsernamePasswordAuthenticationToken is the standard Authentication implementation for username/password login
                 // I checked with ctrl + alt + b on the Authenticate object in the manager class

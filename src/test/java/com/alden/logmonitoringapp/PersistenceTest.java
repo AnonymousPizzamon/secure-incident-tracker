@@ -28,8 +28,8 @@ class PersistenceTest {
     @Test //for test methods
     void saveAndRetrieveEventLog() {
 
-        // create and save a user
-        User user = new User("testuser", "hashedpassword");
+        // create and save user
+        User user = new User("test@example.com", "testuser", "hashedpassword");
         userRepository.save(user);
 
         // create an event, assign the owner, save it
