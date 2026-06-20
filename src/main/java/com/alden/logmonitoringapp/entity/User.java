@@ -24,6 +24,10 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
+    // Unique + non-null at the DB level so the database guarantees one account per username.
+    // The service's existsByUsername check still runs first for a clean error; this is the backstop
+    // for races and any direct DB writes. username is the JWT subject, so it must map to exactly one user.
+    @Column(nullable = false, unique = true)
     private String username;
     private String passwordHash;
     private LocalDateTime createdAt;
