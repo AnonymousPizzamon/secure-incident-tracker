@@ -1,6 +1,9 @@
 package com.alden.logmonitoringapp.controller;
 
 // https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller.html
+import java.util.List;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.http.HttpStatus;
 import com.alden.logmonitoringapp.entity.User;
 import com.alden.logmonitoringapp.dto.event.EventCreateRequest;
@@ -33,5 +36,20 @@ public class EventController {
         //Use eventService to create an EventResponse
         EventResponse response = eventService.create(request, owner);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    // GET /events returns only this owner's events. 200 with a json array
+    @GetMapping
+    public List<EventResponse> list() {
+        User owner = currentUserProvider.getCurrentUser();
+        return eventService.listForUser(owner);
+    }
+
+    // GET /events/{id}. @PathVariable means it gets id from url path
+    // service returns 404 if the event is missing or not owned
+    @GetMapping("/{id}")
+    public EventResponse getOne(@PathVariable Long id) {
+        User owner = currentUserProvider.getCurrentUser();
+        return eventService.getForUser(id, owner);
     }
 }
