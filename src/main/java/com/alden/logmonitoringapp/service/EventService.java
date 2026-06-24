@@ -3,11 +3,13 @@ package com.alden.logmonitoringapp.service;
 // https://docs.spring.io/spring-framework/reference/data-access/transaction/declarative/annotations.html
 import java.util.ArrayList;
 import java.util.List;
+
+import com.alden.logmonitoringapp.dto.event.EventCreateRequest;
+import com.alden.logmonitoringapp.dto.event.EventUpdateRequest;
 import com.alden.logmonitoringapp.exception.NotFoundException;
 import com.alden.logmonitoringapp.entity.Event;
 import com.alden.logmonitoringapp.entity.User;
 import com.alden.logmonitoringapp.dto.event.EventResponse;
-import com.alden.logmonitoringapp.dto.event.EventCreateRequest;
 import com.alden.logmonitoringapp.repository.EventRepository;
 import org.springframework.stereotype.Service;
 
@@ -67,5 +69,19 @@ public class EventService {
         Event event = eventRepository.findByIdAndUser(id, owner)
                 .orElseThrow(() -> new NotFoundException("Event not found"));
         return toResponse(event);
+    }
+
+    public EventResponse update(EventUpdateRequest request, Long id, User owner) {
+        Event event = eventRepository.findByIdAndUser(id, owner)
+                .orElseThrow(() -> new NotFoundException("Event not found"));
+
+        event.updateFields(
+                request.getTitle(), request.getSeverity(), request.getIncidentStatus(), request.getSourceName(), request.getDescription(), request.getOriginIp()
+        );
+
+        eventRepository.save(event); // updates original event in repo
+        return toResponse(event); // return dto for json response
+
+
     }
 }

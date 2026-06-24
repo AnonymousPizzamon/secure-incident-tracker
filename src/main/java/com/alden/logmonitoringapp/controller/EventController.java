@@ -2,20 +2,17 @@ package com.alden.logmonitoringapp.controller;
 
 // https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller.html
 import java.util.List;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.GetMapping;
+
+import com.alden.logmonitoringapp.dto.event.EventUpdateRequest;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import com.alden.logmonitoringapp.entity.User;
 import com.alden.logmonitoringapp.dto.event.EventCreateRequest;
-import org.springframework.web.bind.annotation.RequestBody;
 import jakarta.validation.Valid;
 import com.alden.logmonitoringapp.dto.event.EventResponse;
 import org.springframework.http.ResponseEntity;
 import com.alden.logmonitoringapp.security.CurrentUserProvider;
 import com.alden.logmonitoringapp.service.EventService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/events")
@@ -52,4 +49,13 @@ public class EventController {
         User owner = currentUserProvider.getCurrentUser();
         return eventService.getForUser(id, owner);
     }
+
+    @PutMapping("/{id}") // PUT because we are replacing info not creating new event (idempotent:same result unlike POST which would create duplicates)
+    public EventResponse updateEvent(@PathVariable Long id, @Valid @RequestBody EventUpdateRequest request) {
+        User owner = currentUserProvider.getCurrentUser();
+        // again, identity is from current JWT not http req's
+        EventResponse response = eventService.update(request, id, owner);
+        return response;
+    }
+
 }

@@ -1,6 +1,7 @@
 package com.alden.logmonitoringapp.entity;
 
 
+import com.alden.logmonitoringapp.dto.event.EventCreateRequest;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -75,4 +76,16 @@ public class Event {
     public String getOriginIp() { return originIp; }
     public LocalDateTime getEventTimestamp() { return eventTimestamp; }
     public LocalDateTime getTimeCreated() { return timeCreated; }
+
+    // fields will be passed in directly instead of bringing the fields in through eventResponse ( a controller method shouldn't be in the entity layer)
+    // in the service class the requests data will populate these fields, effectively updating the current event object
+    public void updateFields(String title, Severity severity, IncidentStatus incidentStatus, String sourceName, String description, String originIp ) {
+        this.title = title;
+        this.severity = severity;
+        this.incidentStatus = incidentStatus;
+        this.sourceName = sourceName;
+        this.description = description;
+        this.originIp = originIp;
+
+    }
 }
