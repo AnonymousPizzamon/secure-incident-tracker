@@ -84,4 +84,12 @@ public class EventService {
 
 
     }
+
+    // load first so we only delete an event the caller owns
+    // deleting by id alone would skip the ownership check
+    public void delete(Long id, User owner) {
+        Event event = eventRepository.findByIdAndUser(id, owner)
+                .orElseThrow(() -> new NotFoundException("Event not found"));
+        eventRepository.delete(event);
+    }
 }

@@ -50,12 +50,20 @@ public class EventController {
         return eventService.getForUser(id, owner);
     }
 
-    @PutMapping("/{id}") // PUT because we are replacing info not creating new event (idempotent:same result unlike POST which would create duplicates)
+    @PutMapping("/{id}") // PUT because we are replacing info not creating new event (idempotent: same result even if done multiple times unlike POST which would create duplicates)
     public EventResponse updateEvent(@PathVariable Long id, @Valid @RequestBody EventUpdateRequest request) {
         User owner = currentUserProvider.getCurrentUser();
         // again, identity is from current JWT not http req's
         EventResponse response = eventService.update(request, id, owner);
         return response;
+    }
+
+    // DELETE /events/{id}. no body to return so 204 No Content
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id) {
+        User owner = currentUserProvider.getCurrentUser();
+        eventService.delete(id, owner);
     }
 
 }
