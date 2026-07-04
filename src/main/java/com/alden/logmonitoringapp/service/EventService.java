@@ -1,9 +1,11 @@
 package com.alden.logmonitoringapp.service;
 
 // https://docs.spring.io/spring-framework/reference/data-access/transaction/declarative/annotations.html
-import java.util.ArrayList;
-import java.util.List;
-
+import java.time.LocalDateTime;
+import com.alden.logmonitoringapp.entity.IncidentStatus;
+import com.alden.logmonitoringapp.entity.Severity;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import com.alden.logmonitoringapp.dto.event.EventCreateRequest;
 import com.alden.logmonitoringapp.dto.event.EventUpdateRequest;
 import com.alden.logmonitoringapp.exception.NotFoundException;
@@ -53,15 +55,11 @@ public class EventService {
         );
     }
 
-    // lists only this owner's events, mapped to DTOs
-    public List<EventResponse> listForUser(User owner) {
-        List<EventResponse> eventResponseList = new ArrayList<>();
-        List<Event> events = eventRepository.findByUser(owner);
-        for (Event event : events){
-            eventResponseList.add(toResponse(event));
-        }
-        return eventResponseList;
-
+    // owner-scoped filtered page. .map converts each Event to a dto and keeps the paging metadata
+    public Page<EventResponse> search(User owner, Severity severity, IncidentStatus status,
+            String sourceName, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
+        return eventRepository.search(owner, severity, status, sourceName, startDate, endDate, pageable)
+                .map(this::toResponse);
     }
 
     // empty Optional means missing or not owned. both become 404 via NotFoundException

@@ -1,8 +1,14 @@
 package com.alden.logmonitoringapp.controller;
 
 // https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller.html
-import java.util.List;
-
+import org.springframework.format.annotation.DateTimeFormat;
+import java.time.LocalDateTime;
+import com.alden.logmonitoringapp.entity.IncidentStatus;
+import com.alden.logmonitoringapp.entity.Severity;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import com.alden.logmonitoringapp.dto.event.EventUpdateRequest;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
@@ -35,11 +41,19 @@ public class EventController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // GET /events returns only this owner's events. 200 with a json array
+    // GET /events. all filters optional, owner scoped, paged
+    // @DateTimeFormat parses ISO datetimes like 2026-06-01T00:00:00
+    // @PageableDefault sets newest first, 20 per page when no paging params are sent
     @GetMapping
-    public List<EventResponse> list() {
+    public Page<EventResponse> list(
+            @RequestParam(required = false) Severity severity,
+            @RequestParam(required = false) IncidentStatus incidentStatus,
+            @RequestParam(required = false) String sourceName,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+            @PageableDefault(size = 20, sort = "timeCreated", direction = Sort.Direction.DESC) Pageable pageable) {
         User owner = currentUserProvider.getCurrentUser();
-        return eventService.listForUser(owner);
+        return eventService.search(owner, severity, incidentStatus, sourceName, startDate, endDate, pageable);
     }
 
     // GET /events/{id}. @PathVariable means it gets id from url path
