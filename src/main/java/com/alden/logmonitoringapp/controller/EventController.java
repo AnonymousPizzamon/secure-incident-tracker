@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import com.alden.logmonitoringapp.entity.User;
 import com.alden.logmonitoringapp.dto.event.EventCreateRequest;
 import jakarta.validation.Valid;
+import com.alden.logmonitoringapp.dto.event.EventStatsResponse;
 import com.alden.logmonitoringapp.dto.event.EventResponse;
 import org.springframework.http.ResponseEntity;
 import com.alden.logmonitoringapp.security.CurrentUserProvider;
@@ -54,6 +55,14 @@ public class EventController {
             @PageableDefault(size = 20, sort = "timeCreated", direction = Sort.Direction.DESC) Pageable pageable) {
         User owner = currentUserProvider.getCurrentUser();
         return eventService.search(owner, severity, incidentStatus, sourceName, startDate, endDate, pageable);
+    }
+
+    // GET /events/stats. summary of the caller's own events
+    // literal /stats outranks /{id} so "stats" is never parsed as an id
+    @GetMapping("/stats")
+    public EventStatsResponse stats() {
+        User owner = currentUserProvider.getCurrentUser();
+        return eventService.stats(owner);
     }
 
     // GET /events/{id}. @PathVariable means it gets id from url path

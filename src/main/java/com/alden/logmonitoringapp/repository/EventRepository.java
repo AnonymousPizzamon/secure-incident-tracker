@@ -10,6 +10,7 @@ import com.alden.logmonitoringapp.entity.Severity;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import com.alden.logmonitoringapp.entity.User;
+import java.util.List;
 import java.util.Optional;
 import com.alden.logmonitoringapp.entity.Event;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -40,5 +41,21 @@ public interface EventRepository extends JpaRepository<Event, Long> {
                        @Param("startDate") LocalDateTime startDate,
                        @Param("endDate") LocalDateTime endDate,
                        Pageable pageable);
+
+    // stats-
+    // total number of the caller's events
+    long countByUser(User owner);
+
+    // GROUP BY gives one row per severity with its count. the database does the counting
+    // each row is [Severity, Long]. severities with zero events are simply absent
+    @Query("SELECT e.severity, COUNT(e) FROM Event e WHERE e.user = :owner GROUP BY e.severity")
+    List<Object[]> countBySeverity(@Param("owner") User owner);
+
+    @Query("SELECT e.incidentStatus, COUNT(e) FROM Event e WHERE e.user = :owner GROUP BY e.incidentStatus")
+    List<Object[]> countByStatus(@Param("owner") User owner);
+
+    // MAX ignores null timestamps. returns null when the user has no dated events
+    @Query("SELECT MAX(e.eventTimestamp) FROM Event e WHERE e.user = :owner")
+    LocalDateTime findMostRecentEventTime(@Param("owner") User owner);
 
 }

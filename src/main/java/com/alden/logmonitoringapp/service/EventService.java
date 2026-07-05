@@ -1,7 +1,10 @@
 package com.alden.logmonitoringapp.service;
 
 // https://docs.spring.io/spring-framework/reference/data-access/transaction/declarative/annotations.html
+import java.util.EnumMap;
+import java.util.Map;
 import java.time.LocalDateTime;
+import com.alden.logmonitoringapp.dto.event.EventStatsResponse;
 import com.alden.logmonitoringapp.entity.IncidentStatus;
 import com.alden.logmonitoringapp.entity.Severity;
 import org.springframework.data.domain.Pageable;
@@ -89,5 +92,32 @@ public class EventService {
         Event event = eventRepository.findByIdAndUser(id, owner)
                 .orElseThrow(() -> new NotFoundException("Event not found"));
         eventRepository.delete(event);
+    }
+
+    // owner-scoped summary. counts come from aggregate queries, not by loading every row
+    public EventStatsResponse stats(User owner) {
+        long total = eventRepository.countByUser(owner);
+
+        // start every bucket at zero so a severity with no events still shows up as 0
+        Map<Severity, Long> bySeverity = new EnumMap<>(Severity.class);
+        for (Severity s : Severity.values()) {
+            bySeverity.put(s, 0L);
+        }
+        // each row from the GROUP BY is [Severity, Long]. overwrite the zero with the real count
+        for (Object[] row : eventRepository.countBySeverity(owner)) {
+            bySeverity.put((Severity) row[0], (Long) row[1]);
+        }
+
+        Map<IncidentStatus, Long> byStatus = new EnumMap<>(IncidentStatus.class);
+        for (IncidentStatus st : IncidentStatus.values()) {
+            byStatus.put(st, 0L);
+        }
+        for (Object[] row : eventRepository.countByStatus(owner)) {
+            byStatus.put((IncidentStatus) row[0], (Long) row[1]);
+        }
+
+        LocalDateTime mostRecent = eventRepository.findMostRecentEventTime(owner);
+
+        return new EventStatsResponse(total, bySeverity, byStatus, mostRecent);
     }
 }
