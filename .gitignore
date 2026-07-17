@@ -1,0 +1,54 @@
+### Build ###
+target/
+!**/src/main/**/target/
+!**/src/test/**/target/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### Secrets ###
+.env
+.env.*
+*-secret.properties
+application-local.properties
+
+### Private notes ###
+HELP.md
+Notes
+process_and_notes.md
+docs/Secure_Event_Dashboard_Process_Notes.md
+docs/INTERVIEW_NOTES.md
+docs/Challenges.md
+docs/DEPLOYMENT.md
+docs/SECURITY.md
+docs/TESTING.md
+
+### Not ready to publish yet ###
+README.md
+
+
+
+### IntelliJ ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### Eclipse / STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### Local tooling ###
+.vscode/
