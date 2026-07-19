@@ -3,6 +3,7 @@ package com.alden.logmonitoringapp.exception;
 // turns exceptions into clean json instead of stack traces
 // https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-exceptionhandler.html
 
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
@@ -51,6 +52,15 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleBadCredentials(BadCredentialsException ex) {
         ApiError body = new ApiError(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", "Invalid username or password");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
+    }
+
+    // body jackson can't parse, malformed json or a bad enum value. thrown before validation runs,
+    // so without this it fell through to the 500 catch-all. generic message so parser detail doesn't leak
+    // https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/http/converter/HttpMessageNotReadableException.html
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiError> handleUnreadableBody(HttpMessageNotReadableException ex) {
+        ApiError body = new ApiError(HttpStatus.BAD_REQUEST.value(), "Bad Request", "Malformed or unreadable request body");
+        return ResponseEntity.badRequest().body(body);
     }
 
     // anything unexpected. log server side, return a generic message so internals don't leak

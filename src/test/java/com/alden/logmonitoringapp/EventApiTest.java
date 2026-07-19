@@ -57,6 +57,36 @@ class EventApiTest {
     }
 
     @Test
+    void createEvent_withInvalidSeverityValue_returnsBadRequest() throws Exception {
+        String token = registerAndLogin();
+        // jackson can't map BANANAS to the Severity enum, fails before validation.
+        // must come back 400 from the unreadable-body handler, not the 500 catch-all
+        restTestClient.post().uri("/events")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(eventFields("Bad severity", "BANANAS"))
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.error").isEqualTo("Bad Request");
+    }
+
+    @Test
+    void createEvent_withMalformedJson_returnsBadRequest() throws Exception {
+        String token = registerAndLogin();
+        // raw string body so jackson sees broken json, not a serialized map
+        restTestClient.post().uri("/events")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{\"title\": \"broken\"")
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400);
+    }
+
+    @Test
     void listEvents_returnsOnlyOwnEvents() throws Exception {
         String ownerToken = registerAndLogin();
         createEvent(ownerToken, eventFields("event one", "LOW"));
