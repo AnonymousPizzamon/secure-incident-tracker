@@ -5,9 +5,7 @@ import com.alden.logmonitoringapp.entity.Severity;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-import java.time.LocalDateTime;
-
-// doesn't contain id, user, or timestamp, these should be unchanged.
+// doesn't contain id, user, or timestamps, these should be unchanged.
 
 public class EventUpdateRequest {
     @NotBlank
@@ -20,7 +18,6 @@ public class EventUpdateRequest {
     private String sourceName;
     private String description;
     private String originIp;
-    private LocalDateTime eventTimestamp;
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
