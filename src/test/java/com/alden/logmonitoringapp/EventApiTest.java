@@ -95,14 +95,14 @@ class EventApiTest {
         String otherToken = registerAndLogin();
         createEvent(otherToken, eventFields("other one", "MEDIUM"));
 
-        // GET /events returns a Page, so the rows are under $.content with paging fields alongside.
+        // GET /events renders as PagedModel: rows under $.content, paging metadata under $.page
         // fresh user so this list only has its own two events, the other user's event never shows up
         restTestClient.get().uri("/events").header("Authorization", "Bearer " + ownerToken)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.content.length()").isEqualTo(2)
-                .jsonPath("$.totalElements").isEqualTo(2);
+                .jsonPath("$.page.totalElements").isEqualTo(2);
 
         restTestClient.get().uri("/events").header("Authorization", "Bearer " + otherToken)
                 .exchange()
