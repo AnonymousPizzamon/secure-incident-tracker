@@ -5,6 +5,7 @@ package com.alden.logmonitoringapp;
 // must return 404 (not 403) so api never reveals it exists.
 // https://spring.io/guides/gs/testing-web/
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import java.time.LocalDateTime;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.http.MediaType;
@@ -215,6 +216,30 @@ class EventApiTest {
                 .expectBody()
                 .jsonPath("$.content.length()").isEqualTo(1)
                 .jsonPath("$.content[0].severity").isEqualTo("HIGH");
+    }
+
+    @Test
+    void filter_byDateRange_returnsOnlyEventsInsideRange() throws Exception {
+        String token = registerAndLogin();
+        // the rejected events miss by one second, so a comparison that is off at all fails here.
+        // the kept one sits exactly on startDate because the bounds are inclusive
+        Map<String, Object> inside = eventFields("inside range", "HIGH");
+        inside.put("eventTimestamp", "2026-01-01T00:00:00");
+        createEvent(token, inside);
+        Map<String, Object> tooEarly = eventFields("one second early", "LOW");
+        tooEarly.put("eventTimestamp", "2025-12-31T23:59:59");
+        createEvent(token, tooEarly);
+        Map<String, Object> tooLate = eventFields("one second late", "LOW");
+        tooLate.put("eventTimestamp", "2026-08-01T00:00:01");
+        createEvent(token, tooLate);
+
+        restTestClient.get().uri("/events?startDate=2026-01-01T00:00:00&endDate=2026-08-01T00:00:00")
+                .header("Authorization", "Bearer " + token)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(1)
+                .jsonPath("$.content[0].title").isEqualTo("inside range");
     }
 
     @Test
