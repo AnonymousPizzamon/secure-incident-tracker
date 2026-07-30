@@ -5,7 +5,6 @@ package com.alden.logmonitoringapp;
 // must return 404 (not 403) so api never reveals it exists.
 // https://spring.io/guides/gs/testing-web/
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import java.time.LocalDateTime;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.http.MediaType;
@@ -240,6 +239,34 @@ class EventApiTest {
                 .expectBody()
                 .jsonPath("$.content.length()").isEqualTo(1)
                 .jsonPath("$.content[0].title").isEqualTo("inside range");
+    }
+
+    // eventTimestamp is optional and a null one is left out of date filters on purpose.
+    // sql compares null to anything as null, never true, so the row falls outside every range.
+    // it is still reachable in the unfiltered list, where the ui will label the missing date
+    @Test
+    void filter_byDateRange_excludesEventWithNoTimestamp() throws Exception {
+        String token = registerAndLogin();
+        Map<String, Object> dated = eventFields("has timestamp", "HIGH");
+        dated.put("eventTimestamp", "2026-06-01T10:00:00");
+        createEvent(token, dated);
+        Map<String, Object> undated = eventFields("no timestamp", "LOW");
+        undated.remove("eventTimestamp");
+        createEvent(token, undated);
+
+        restTestClient.get().uri("/events?startDate=2000-01-01T00:00:00&endDate=2100-01-01T00:00:00")
+                .header("Authorization", "Bearer " + token)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(1)
+                .jsonPath("$.content[0].title").isEqualTo("has timestamp");
+
+        // unfiltered the event is still there, so it is hidden from date ranges, not lost
+        restTestClient.get().uri("/events").header("Authorization", "Bearer " + token)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody().jsonPath("$.page.totalElements").isEqualTo(2);
     }
 
     @Test
