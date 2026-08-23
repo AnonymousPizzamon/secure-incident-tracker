@@ -1,5 +1,7 @@
 package com.alden.logmonitoringapp.config;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import com.alden.logmonitoringapp.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -57,6 +59,12 @@ public class SecurityConfig {
                 .requestMatchers("/auth/register", "/auth/login", "/error" ).permitAll() // public endpoints
                 .anyRequest().authenticated()// everything else requires a valid token
             )
+
+            // spring defaults to 403 when no entry point is set. a missing or bad token
+            // means you never authenticated so 401 fits. status only, no body
+            .exceptionHandling(ex -> ex.authenticationEntryPoint(
+                    new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+
             // run the JWT filter before Spring's default username/password filter so the SecurityContext
             // is already populated from the token by the time Spring checks if the request is authenticated.
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

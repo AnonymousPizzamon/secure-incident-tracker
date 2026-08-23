@@ -105,10 +105,10 @@ class AuthApiTest {
 
     @Test
     void protectedRoute_withoutToken_isRejected() throws Exception {
-        // no entry point configured so spring's default returns 403, not 401
+        // SecurityConfig's entry point returns 401 for an unauthenticated request
         restTestClient.get().uri("/users/me")
                 .exchange()
-                .expectStatus().isForbidden();
+                .expectStatus().isUnauthorized();
     }
 
     @Test
