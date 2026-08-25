@@ -54,3 +54,4 @@ docs/TESTING.md
 .vscode/
 __pycache__/
 *.pyc
+/intellij-style.xml
