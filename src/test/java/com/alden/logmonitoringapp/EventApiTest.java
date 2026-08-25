@@ -241,8 +241,8 @@ class EventApiTest {
                 .jsonPath("$.content[0].title").isEqualTo("inside range");
     }
 
-    // eventTimestamp is optional and a null one is left out of date filters on purpose.
-    // sql compares null to anything as null, never true, so the row falls outside every range.
+    // eventTimestamp is optional and a null one is left out of date filters on purpose
+    // sql compares null to anything as null, never true, so the row falls outside every range
     // it is still reachable in the unfiltered list, where the ui will label the missing date
     @Test
     void filter_byDateRange_excludesEventWithNoTimestamp() throws Exception {
