@@ -1,0 +1,35 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  color: #1c1e21;
+  background: #fff;
+}
+
+.auth-page {
+  max-width: 24rem;
+  margin: 4rem auto;
+  padding: 0 1rem;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.auth-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.form-error {
+  margin: 0;
+  color: #b3261e;
+}
