@@ -57,3 +57,62 @@ export function saveToken(token: string): void {
 export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY)
 }
+
+export type Severity = 'INFO' | 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
+
+export type IncidentStatus = 'UNRESOLVED' | 'IN_PROGRESS' | 'RESOLVED'
+
+export interface EventResponse {
+  id: number
+  userId: number
+  title: string
+  severity: Severity
+  incidentStatus: IncidentStatus
+  sourceName: string | null
+  description: string | null
+  originIp: string | null
+  eventTimestamp: string | null
+  timeCreated: string
+}
+
+// PagedModel json, set by the VIA_DTO serialization mode on LogMonitoringAppApplication
+export interface Page<T> {
+  content: T[]
+  page: {
+    size: number
+    number: number
+    totalElements: number
+    totalPages: number
+  }
+}
+
+// every authenticated call goes through here, so an expired token is handled once
+async function authedRequest<T>(path: string, init?: RequestInit): Promise<T> {
+  // Headers accepts any HeadersInit form, so callers can pass their own and keep them
+  const headers = new Headers(init?.headers)
+  headers.set('Authorization', `Bearer ${getToken() ?? ''}`)
+
+  const response = await fetch(path, { ...init, headers })
+
+  // token is expired or forged. localStorage still holds it, so drop it before leaving
+  if (response.status === 401) {
+    clearToken()
+    window.location.replace('/login')
+    throw new Error('Session expired')
+  }
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => null) as ApiErrorBody | null
+    throw new Error(errorBody?.message ?? `Request failed (${response.status})`)
+  }
+
+  return response.json() as Promise<T>
+}
+
+export function listEvents(): Promise<Page<EventResponse>> {
+  return authedRequest<Page<EventResponse>>('/events')
+}
+
+export function clearToken(): void {
+  localStorage.removeItem(TOKEN_KEY)
+}
