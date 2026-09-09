@@ -35,7 +35,7 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
   })
 
   if (!response.ok) {
-    const errorBody = await response.json().catch(() => null) as ApiErrorBody | null
+    const errorBody = (await response.json().catch(() => null)) as ApiErrorBody | null
     throw new Error(errorBody?.message ?? `Request failed (${response.status})`)
   }
 
@@ -102,7 +102,7 @@ async function authedRequest<T>(path: string, init?: RequestInit): Promise<T> {
   }
 
   if (!response.ok) {
-    const errorBody = await response.json().catch(() => null) as ApiErrorBody | null
+    const errorBody = (await response.json().catch(() => null)) as ApiErrorBody | null
     throw new Error(errorBody?.message ?? `Request failed (${response.status})`)
   }
 
