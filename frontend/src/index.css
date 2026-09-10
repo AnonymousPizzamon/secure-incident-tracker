@@ -57,3 +57,23 @@ body {
   text-transform: uppercase;
   color: #5c5f66;
 }
+
+.event-create {
+  margin-bottom: 2.5rem;
+}
+
+.event-form {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.event-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.event-form-wide {
+  grid-column: 1 / -1;
+}

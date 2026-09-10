@@ -62,6 +62,17 @@ export type Severity = 'INFO' | 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
 
 export type IncidentStatus = 'UNRESOLVED' | 'IN_PROGRESS' | 'RESOLVED'
 
+// mirrors EventCreateRequest on the backend. optional fields are omitted, not sent empty
+export interface EventCreateRequest {
+  title: string
+  severity: Severity
+  incidentStatus?: IncidentStatus
+  sourceName?: string
+  description?: string
+  originIp?: string
+  eventTimestamp?: string
+}
+
 export interface EventResponse {
   id: number
   userId: number
@@ -107,6 +118,15 @@ async function authedRequest<T>(path: string, init?: RequestInit): Promise<T> {
   }
 
   return response.json() as Promise<T>
+}
+
+// 201 comes back with the created event, so callers get the server assigned id and timeCreated
+export function createEvent(request: EventCreateRequest): Promise<EventResponse> {
+  return authedRequest<EventResponse>('/events', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(request),
+  })
 }
 
 export function listEvents(): Promise<Page<EventResponse>> {
