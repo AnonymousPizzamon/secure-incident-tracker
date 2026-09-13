@@ -23,8 +23,26 @@ export interface LoginResponse {
   token: string
 }
 
+// mirrors ApiError on the backend. fieldErrors is absent, not null, when there are none
 interface ApiErrorBody {
   message: string
+  fieldErrors?: Record<string, string>
+}
+
+// fieldErrors first. message is the constant "Validation failed" on @Valid failures
+async function toError(response: Response): Promise<Error> {
+  const body = (await response.json().catch(() => null)) as ApiErrorBody | null
+
+  if (body?.fieldErrors) {
+    const details = Object.entries(body.fieldErrors)
+      .map(([field, message]) => `${field}: ${message}`)
+      .join(', ')
+    if (details !== '') {
+      return new Error(details)
+    }
+  }
+
+  return new Error(body?.message ?? `Request failed (${response.status})`)
 }
 
 async function postJson<T>(path: string, body: unknown): Promise<T> {
@@ -35,8 +53,7 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
   })
 
   if (!response.ok) {
-    const errorBody = (await response.json().catch(() => null)) as ApiErrorBody | null
-    throw new Error(errorBody?.message ?? `Request failed (${response.status})`)
+    throw await toError(response)
   }
 
   return response.json() as Promise<T>
@@ -124,8 +141,7 @@ async function authedRequest<T>(path: string, init?: RequestInit): Promise<T> {
   }
 
   if (!response.ok) {
-    const errorBody = (await response.json().catch(() => null)) as ApiErrorBody | null
-    throw new Error(errorBody?.message ?? `Request failed (${response.status})`)
+    throw await toError(response)
   }
 
   // 204 carries no body, so parsing it as json throws on the empty stream
