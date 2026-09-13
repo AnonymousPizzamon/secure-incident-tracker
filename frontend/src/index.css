@@ -82,3 +82,8 @@ body {
   display: flex;
   gap: 0.5rem;
 }
+
+/* jsx drops the newline between the row buttons, so they need the gap here */
+.event-table button + button {
+  margin-left: 0.5rem;
+}

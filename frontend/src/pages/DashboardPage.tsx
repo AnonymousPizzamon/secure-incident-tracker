@@ -9,7 +9,7 @@ import type {
   IncidentStatus,
   Severity,
 } from '../api/client'
-import { createEvent, listEvents, updateEvent } from '../api/client'
+import { createEvent, deleteEvent, listEvents, updateEvent } from '../api/client'
 
 // backend sends LocalDateTime with no zone, so this reads as local time
 function formatTime(value: string): string {
@@ -93,6 +93,25 @@ function DashboardPage() {
     setEditingId(null)
     setFormError(null)
     setForm(emptyForm)
+  }
+
+  // confirm blocks until dismissed. cancelling leaves state untouched and sends no request
+  async function handleDelete(event: EventResponse) {
+    if (!window.confirm(`Delete "${event.title}"?`)) {
+      return
+    }
+
+    try {
+      await deleteEvent(event.id)
+      setEvents((current) => current.filter((row) => row.id !== event.id))
+      // form was seeded from a row that is now gone, so saving it would 404
+      if (editingId === event.id) {
+        cancelEdit()
+      }
+    } catch (err) {
+      // list level failure, not a form one, so it renders above the table
+      setError(err instanceof Error ? err.message : 'Could not delete event')
+    }
   }
 
   async function handleSubmit(submitEvent: FormEvent<HTMLFormElement>) {
@@ -274,6 +293,9 @@ function DashboardPage() {
                 <td>
                   <button type="button" onClick={() => startEdit(event)}>
                     Edit
+                  </button>
+                  <button type="button" onClick={() => handleDelete(event)}>
+                    Delete
                   </button>
                 </td>
               </tr>

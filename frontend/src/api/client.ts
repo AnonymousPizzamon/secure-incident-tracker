@@ -128,6 +128,11 @@ async function authedRequest<T>(path: string, init?: RequestInit): Promise<T> {
     throw new Error(errorBody?.message ?? `Request failed (${response.status})`)
   }
 
+  // 204 carries no body, so parsing it as json throws on the empty stream
+  if (response.status === 204) {
+    return undefined as T
+  }
+
   return response.json() as Promise<T>
 }
 
@@ -147,6 +152,11 @@ export function updateEvent(id: number, request: EventUpdateRequest): Promise<Ev
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(request),
   })
+}
+
+// hard delete, 204 on success. nothing to return so the caller drops the row itself
+export function deleteEvent(id: number): Promise<void> {
+  return authedRequest<void>(`/events/${id}`, { method: 'DELETE' })
 }
 
 export function listEvents(): Promise<Page<EventResponse>> {
