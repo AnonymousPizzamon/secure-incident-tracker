@@ -2,8 +2,14 @@
 // effect fetch per https://react.dev/reference/react/useEffect#fetching-data-with-effects
 import type { FormEvent } from 'react'
 import { useEffect, useState } from 'react'
-import type { EventCreateRequest, EventResponse, IncidentStatus, Severity } from '../api/client'
-import { createEvent, listEvents } from '../api/client'
+import type {
+  EventCreateRequest,
+  EventResponse,
+  EventUpdateRequest,
+  IncidentStatus,
+  Severity,
+} from '../api/client'
+import { createEvent, listEvents, updateEvent } from '../api/client'
 
 // backend sends LocalDateTime with no zone, so this reads as local time
 function formatTime(value: string): string {
@@ -50,6 +56,10 @@ function DashboardPage() {
   const [form, setForm] = useState<EventForm>(emptyForm)
   const [formError, setFormError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  // null means the form is creating, an id means it is editing that event
+  const [editingId, setEditingId] = useState<number | null>(null)
+
+  const isEditing = editingId !== null
 
   // empty dep array, so this runs once after the first render
   useEffect(() => {
@@ -63,30 +73,68 @@ function DashboardPage() {
     setForm((current) => ({ ...current, [field]: value }))
   }
 
-  async function handleCreate(submitEvent: FormEvent<HTMLFormElement>) {
+  // seeds every editable field from the row already in state, so no extra GET is needed
+  // an unseeded field would submit blank and PUT would overwrite the stored value
+  function startEdit(event: EventResponse) {
+    setFormError(null)
+    setEditingId(event.id)
+    setForm({
+      title: event.title,
+      severity: event.severity,
+      incidentStatus: event.incidentStatus,
+      sourceName: event.sourceName ?? '',
+      description: event.description ?? '',
+      originIp: event.originIp ?? '',
+      eventTimestamp: '',
+    })
+  }
+
+  function cancelEdit() {
+    setEditingId(null)
+    setFormError(null)
+    setForm(emptyForm)
+  }
+
+  async function handleSubmit(submitEvent: FormEvent<HTMLFormElement>) {
     submitEvent.preventDefault()
     setFormError(null)
     setSubmitting(true)
 
-    // no user id in the body. owner is resolved from the bearer token on the backend
-    const request: EventCreateRequest = {
-      title: form.title,
-      severity: form.severity,
-      incidentStatus: form.incidentStatus,
-      sourceName: blankToUndefined(form.sourceName),
-      description: blankToUndefined(form.description),
-      originIp: blankToUndefined(form.originIp),
-      eventTimestamp: blankToUndefined(form.eventTimestamp),
-    }
-
     try {
-      const created = await createEvent(request)
-      // 201 body already carries id, userId and timeCreated, so there's nothing to refetch
-      // prepend matches the server sort, newest first
-      setEvents((current) => [created, ...current])
+      if (editingId === null) {
+        // no user id in the body. owner is resolved from the bearer token on the backend
+        const request: EventCreateRequest = {
+          title: form.title,
+          severity: form.severity,
+          incidentStatus: form.incidentStatus,
+          sourceName: blankToUndefined(form.sourceName),
+          description: blankToUndefined(form.description),
+          originIp: blankToUndefined(form.originIp),
+          eventTimestamp: blankToUndefined(form.eventTimestamp),
+        }
+        const created = await createEvent(request)
+        // 201 body already carries id, userId and timeCreated, so there is nothing to refetch
+        // prepend matches the server sort, newest first
+        setEvents((current) => [created, ...current])
+      } else {
+        // all six fields go out every time. PUT replaces the record, it does not patch it
+        const request: EventUpdateRequest = {
+          title: form.title,
+          severity: form.severity,
+          incidentStatus: form.incidentStatus,
+          sourceName: blankToUndefined(form.sourceName),
+          description: blankToUndefined(form.description),
+          originIp: blankToUndefined(form.originIp),
+        }
+        const updated = await updateEvent(editingId, request)
+        // timeCreated is unchanged by an update, so sort order holds and the row swaps in place
+        setEvents((current) => current.map((row) => (row.id === updated.id ? updated : row)))
+        setEditingId(null)
+      }
       setForm(emptyForm)
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : 'Could not create event')
+      // form keeps its values so a rejected save can be corrected and retried
+      setFormError(err instanceof Error ? err.message : 'Could not save event')
     } finally {
       setSubmitting(false)
     }
@@ -97,11 +145,11 @@ function DashboardPage() {
       <h1>Events</h1>
 
       <section className="event-create">
-        <h2>New event</h2>
+        <h2>{isEditing ? 'Edit event' : 'New event'}</h2>
 
         {formError && <p className="form-error">{formError}</p>}
 
-        <form className="event-form" onSubmit={handleCreate}>
+        <form className="event-form" onSubmit={handleSubmit}>
           <label>
             Title
             <input
@@ -164,15 +212,17 @@ function DashboardPage() {
               onChange={(changeEvent) => updateField('originIp', changeEvent.target.value)}
             />
           </label>
-          <label>
-            Occurred
-            <input
-              name="eventTimestamp"
-              type="datetime-local"
-              value={form.eventTimestamp}
-              onChange={(changeEvent) => updateField('eventTimestamp', changeEvent.target.value)}
-            />
-          </label>
+          {!isEditing && (
+            <label>
+              Occurred
+              <input
+                name="eventTimestamp"
+                type="datetime-local"
+                value={form.eventTimestamp}
+                onChange={(changeEvent) => updateField('eventTimestamp', changeEvent.target.value)}
+              />
+            </label>
+          )}
           <label className="event-form-wide">
             Description
             <textarea
@@ -182,9 +232,16 @@ function DashboardPage() {
               onChange={(changeEvent) => updateField('description', changeEvent.target.value)}
             />
           </label>
-          <button className="event-form-wide" type="submit" disabled={submitting}>
-            {submitting ? 'Saving...' : 'Create event'}
-          </button>
+          <div className="event-form-wide event-form-actions">
+            <button type="submit" disabled={submitting}>
+              {submitting ? 'Saving...' : isEditing ? 'Save changes' : 'Create event'}
+            </button>
+            {isEditing && (
+              <button type="button" onClick={cancelEdit} disabled={submitting}>
+                Cancel
+              </button>
+            )}
+          </div>
         </form>
       </section>
 
@@ -203,6 +260,7 @@ function DashboardPage() {
               <th>Status</th>
               <th>Source</th>
               <th>Occurred</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -213,6 +271,11 @@ function DashboardPage() {
                 <td>{event.incidentStatus}</td>
                 <td>{event.sourceName ?? ''}</td>
                 <td>{formatTime(event.eventTimestamp ?? event.timeCreated)}</td>
+                <td>
+                  <button type="button" onClick={() => startEdit(event)}>
+                    Edit
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>

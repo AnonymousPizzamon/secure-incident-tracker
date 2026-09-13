@@ -73,6 +73,17 @@ export interface EventCreateRequest {
   eventTimestamp?: string
 }
 
+// PUT replaces the whole record, so every editable field is required here
+// no eventTimestamp, occurrence time is fixed at creation
+export interface EventUpdateRequest {
+  title: string
+  severity: Severity
+  incidentStatus: IncidentStatus
+  sourceName?: string
+  description?: string
+  originIp?: string
+}
+
 export interface EventResponse {
   id: number
   userId: number
@@ -124,6 +135,15 @@ async function authedRequest<T>(path: string, init?: RequestInit): Promise<T> {
 export function createEvent(request: EventCreateRequest): Promise<EventResponse> {
   return authedRequest<EventResponse>('/events', {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(request),
+  })
+}
+
+// returns the updated event, so the caller can swap it into state without a reload
+export function updateEvent(id: number, request: EventUpdateRequest): Promise<EventResponse> {
+  return authedRequest<EventResponse>(`/events/${id}`, {
+    method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(request),
   })

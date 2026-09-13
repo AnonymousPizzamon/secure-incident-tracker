@@ -77,3 +77,8 @@ body {
 .event-form-wide {
   grid-column: 1 / -1;
 }
+
+.event-form-actions {
+  display: flex;
+  gap: 0.5rem;
+}
