@@ -101,6 +101,15 @@ export interface EventUpdateRequest {
   originIp?: string
 }
 
+// mirrors the optional query params on EventController.list. dates are ISO date time strings
+export interface EventFilters {
+  severity?: Severity
+  incidentStatus?: IncidentStatus
+  sourceName?: string
+  startDate?: string
+  endDate?: string
+}
+
 export interface EventResponse {
   id: number
   userId: number
@@ -175,8 +184,17 @@ export function deleteEvent(id: number): Promise<void> {
   return authedRequest<void>(`/events/${id}`, { method: 'DELETE' })
 }
 
-export function listEvents(): Promise<Page<EventResponse>> {
-  return authedRequest<Page<EventResponse>>('/events')
+// only set filters go on the wire. an empty string would be sent as a real value and 400 on the enums
+// https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams
+export function listEvents(filters: EventFilters = {}): Promise<Page<EventResponse>> {
+  const params = new URLSearchParams()
+  for (const [key, value] of Object.entries(filters)) {
+    if (value) {
+      params.set(key, value)
+    }
+  }
+  const query = params.toString()
+  return authedRequest<Page<EventResponse>>(query ? `/events?${query}` : '/events')
 }
 
 export function clearToken(): void {

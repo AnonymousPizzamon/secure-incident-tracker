@@ -68,7 +68,8 @@ body {
   gap: 1rem;
 }
 
-.event-form label {
+.event-form label,
+.filter-form label {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
@@ -78,9 +79,21 @@ body {
   grid-column: 1 / -1;
 }
 
-.event-form-actions {
+.event-form-actions,
+.filter-form-actions {
   display: flex;
   gap: 0.5rem;
+}
+
+.event-filters {
+  margin-bottom: 1.5rem;
+}
+
+.filter-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
 }
 
 /* jsx drops the newline between the row buttons, so they need the gap here */

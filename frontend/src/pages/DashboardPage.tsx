@@ -4,6 +4,7 @@ import type { FormEvent } from 'react'
 import { useEffect, useState } from 'react'
 import type {
   EventCreateRequest,
+  EventFilters,
   EventResponse,
   EventUpdateRequest,
   IncidentStatus,
@@ -43,6 +44,23 @@ const emptyForm: EventForm = {
   eventTimestamp: '',
 }
 
+// same idea as EventForm. inputs hold strings, apply converts and drops blanks
+interface FilterForm {
+  severity: string
+  incidentStatus: string
+  sourceName: string
+  startDate: string
+  endDate: string
+}
+
+const emptyFilterForm: FilterForm = {
+  severity: '',
+  incidentStatus: '',
+  sourceName: '',
+  startDate: '',
+  endDate: '',
+}
+
 // blank optional fields are dropped from the body rather than sent as ""
 // empty string is not a valid ISO datetime and eventTimestamp has no server side default
 function blankToUndefined(value: string): string | undefined {
@@ -60,17 +78,58 @@ function DashboardPage() {
   const [editingId, setEditingId] = useState<number | null>(null)
 
   const isEditing = editingId !== null
+  // filterForm is what the inputs show. filters is what was last applied and what the effect fetches
+  const [filterForm, setFilterForm] = useState<FilterForm>(emptyFilterForm)
+  const [filters, setFilters] = useState<EventFilters>({})
 
-  // empty dep array, so this runs once after the first render
+  // runs on mount and again whenever filters changes. ignore is flipped in cleanup so a slow
+  // response for an older filter set cannot overwrite the list after a newer one already landed
+  // loading is set by the handlers that change filters, not here, so the effect only fetches
   useEffect(() => {
-    listEvents()
-      .then((page) => setEvents(page.content))
-      .catch((err) => setError(err instanceof Error ? err.message : 'Could not load events'))
-      .finally(() => setLoading(false))
-  }, [])
+    let ignore = false
+    listEvents(filters)
+      .then((page) => {
+        if (!ignore) setEvents(page.content)
+      })
+      .catch((err) => {
+        if (!ignore) setError(err instanceof Error ? err.message : 'Could not load events')
+      })
+      .finally(() => {
+        if (!ignore) setLoading(false)
+      })
+    return () => {
+      ignore = true
+    }
+  }, [filters])
 
   function updateField(field: TextField, value: string) {
     setForm((current) => ({ ...current, [field]: value }))
+  }
+
+  function updateFilter(field: keyof FilterForm, value: string) {
+    setFilterForm((current) => ({ ...current, [field]: value }))
+  }
+
+  // a new object every time, so applying the same values again still refetches
+  // the selects only offer real enum values, so the casts hold
+  function applyFilters(submitEvent: FormEvent<HTMLFormElement>) {
+    submitEvent.preventDefault()
+    setLoading(true)
+    setError(null)
+    setFilters({
+      severity: blankToUndefined(filterForm.severity) as Severity | undefined,
+      incidentStatus: blankToUndefined(filterForm.incidentStatus) as IncidentStatus | undefined,
+      sourceName: blankToUndefined(filterForm.sourceName),
+      startDate: blankToUndefined(filterForm.startDate),
+      endDate: blankToUndefined(filterForm.endDate),
+    })
+  }
+
+  function clearFilters() {
+    setFilterForm(emptyFilterForm)
+    setLoading(true)
+    setError(null)
+    setFilters({})
   }
 
   // seeds every editable field from the row already in state, so no extra GET is needed
@@ -260,6 +319,74 @@ function DashboardPage() {
                 Cancel
               </button>
             )}
+          </div>
+        </form>
+      </section>
+
+      <section className="event-filters">
+        <h2>Filter</h2>
+        <form className="filter-form" onSubmit={applyFilters}>
+          <label>
+            Severity
+            <select
+              name="severity"
+              value={filterForm.severity}
+              onChange={(changeEvent) => updateFilter('severity', changeEvent.target.value)}
+            >
+              <option value="">Any</option>
+              {SEVERITIES.map((severity) => (
+                <option key={severity} value={severity}>
+                  {severity}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Status
+            <select
+              name="incidentStatus"
+              value={filterForm.incidentStatus}
+              onChange={(changeEvent) => updateFilter('incidentStatus', changeEvent.target.value)}
+            >
+              <option value="">Any</option>
+              {STATUSES.map((status) => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Source
+            <input
+              name="sourceName"
+              value={filterForm.sourceName}
+              onChange={(changeEvent) => updateFilter('sourceName', changeEvent.target.value)}
+            />
+          </label>
+          <label>
+            From
+            <input
+              name="startDate"
+              type="datetime-local"
+              value={filterForm.startDate}
+              onChange={(changeEvent) => updateFilter('startDate', changeEvent.target.value)}
+            />
+          </label>
+          <label>
+            To
+            <input
+              name="endDate"
+              type="datetime-local"
+              value={filterForm.endDate}
+              onChange={(changeEvent) => updateFilter('endDate', changeEvent.target.value)}
+            />
+          </label>
+          <div className="filter-form-actions">
+            <button type="submit">Apply</button>
+            <button type="button" onClick={clearFilters}>
+              Clear
+            </button>
           </div>
         </form>
       </section>
