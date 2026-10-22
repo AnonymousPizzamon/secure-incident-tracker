@@ -6,15 +6,21 @@ import type {
   EventCreateRequest,
   EventFilters,
   EventResponse,
+  EventStatsResponse,
   EventUpdateRequest,
   IncidentStatus,
   Severity,
 } from '../api/client'
-import { createEvent, deleteEvent, listEvents, updateEvent } from '../api/client'
+import { createEvent, deleteEvent, getStats, listEvents, updateEvent } from '../api/client'
 
 // backend sends LocalDateTime with no zone, so this reads as local time
 function formatTime(value: string): string {
   return new Date(value).toLocaleString()
+}
+
+// keys decide the order, so the display doesn't depend on json key order
+function formatCounts<K extends string>(keys: K[], counts: Record<K, number>): string {
+  return keys.map((key) => `${key} ${counts[key]}`).join(', ')
 }
 
 // typed against the unions, so a typo here fails the build instead of the request
@@ -81,6 +87,10 @@ function DashboardPage() {
   // filterForm is what the inputs show. filters is what was last applied and what the effect fetches
   const [filterForm, setFilterForm] = useState<FilterForm>(emptyFilterForm)
   const [filters, setFilters] = useState<EventFilters>({})
+  const [stats, setStats] = useState<EventStatsResponse | null>(null)
+  const [statsError, setStatsError] = useState<string | null>(null)
+  // bumped after each create, edit and delete so the stats effect runs again
+  const [statsVersion, setStatsVersion] = useState(0)
 
   // runs on mount and again whenever filters changes. ignore is flipped in cleanup so a slow
   // response for an older filter set cannot overwrite the list after a newer one already landed
@@ -101,6 +111,24 @@ function DashboardPage() {
       ignore = true
     }
   }, [filters])
+
+  // counting the events array instead would only cover the visible page and filter.
+  // backend counts every owned row, so ask it again whenever statsVersion moves
+  useEffect(() => {
+    let ignore = false
+    getStats()
+      .then((result) => {
+        if (ignore) return
+        setStats(result)
+        setStatsError(null)
+      })
+      .catch((err) => {
+        if (!ignore) setStatsError(err instanceof Error ? err.message : 'Could not load stats')
+      })
+    return () => {
+      ignore = true
+    }
+  }, [statsVersion])
 
   function updateField(field: TextField, value: string) {
     setForm((current) => ({ ...current, [field]: value }))
@@ -163,6 +191,7 @@ function DashboardPage() {
     try {
       await deleteEvent(event.id)
       setEvents((current) => current.filter((row) => row.id !== event.id))
+      setStatsVersion((current) => current + 1)
       // form was seeded from a row that is now gone, so saving it would 404
       if (editingId === event.id) {
         cancelEdit()
@@ -209,6 +238,8 @@ function DashboardPage() {
         setEvents((current) => current.map((row) => (row.id === updated.id ? updated : row)))
         setEditingId(null)
       }
+      // edit can move severity or status, so every successful save refreshes stats
+      setStatsVersion((current) => current + 1)
       setForm(emptyForm)
     } catch (err) {
       // form keeps its values so a rejected save can be corrected and retried
@@ -221,6 +252,27 @@ function DashboardPage() {
   return (
     <main className="dashboard">
       <h1>Events</h1>
+
+      <section className="event-stats">
+        <h2>Stats</h2>
+        {statsError && <p className="form-error">{statsError}</p>}
+        {stats && (
+          <dl className="stats-list">
+            <dt>Total</dt>
+            <dd>{stats.totalEvents}</dd>
+            <dt>By severity</dt>
+            <dd>{formatCounts(SEVERITIES, stats.countBySeverity)}</dd>
+            <dt>By status</dt>
+            <dd>{formatCounts(STATUSES, stats.countByStatus)}</dd>
+            <dt>Latest event</dt>
+            <dd>
+              {stats.mostRecentEventTime
+                ? formatTime(stats.mostRecentEventTime)
+                : 'No dated events'}
+            </dd>
+          </dl>
+        )}
+      </section>
 
       <section className="event-create">
         <h2>{isEditing ? 'Edit event' : 'New event'}</h2>

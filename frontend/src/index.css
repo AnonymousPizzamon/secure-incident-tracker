@@ -85,6 +85,22 @@ body {
   gap: 0.5rem;
 }
 
+.event-stats {
+  margin-bottom: 2rem;
+}
+
+.stats-list {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.25rem 1rem;
+  margin: 0;
+}
+
+/* dd has a default left indent */
+.stats-list dd {
+  margin: 0;
+}
+
 .event-filters {
   margin-bottom: 1.5rem;
 }

@@ -110,6 +110,14 @@ export interface EventFilters {
   endDate?: string
 }
 
+// mirrors EventStatsResponse. every enum key is present, backend seeds zeroes
+export interface EventStatsResponse {
+  totalEvents: number
+  countBySeverity: Record<Severity, number>
+  countByStatus: Record<IncidentStatus, number>
+  mostRecentEventTime: string | null
+}
+
 export interface EventResponse {
   id: number
   userId: number
@@ -195,6 +203,11 @@ export function listEvents(filters: EventFilters = {}): Promise<Page<EventRespon
   }
   const query = params.toString()
   return authedRequest<Page<EventResponse>>(query ? `/events?${query}` : '/events')
+}
+
+// counts cover every owned event, not the current page or filter
+export function getStats(): Promise<EventStatsResponse> {
+  return authedRequest<EventStatsResponse>('/events/stats')
 }
 
 export function clearToken(): void {
