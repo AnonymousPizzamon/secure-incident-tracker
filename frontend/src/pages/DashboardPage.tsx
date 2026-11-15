@@ -1,5 +1,6 @@
 // owner scoped event list, rendered behind ProtectedRoute
 // effect fetch per https://react.dev/reference/react/useEffect#fetching-data-with-effects
+import { useNavigate } from 'react-router-dom'
 import type { FormEvent } from 'react'
 import { useEffect, useState } from 'react'
 import type {
@@ -11,7 +12,14 @@ import type {
   IncidentStatus,
   Severity,
 } from '../api/client'
-import { createEvent, deleteEvent, getStats, listEvents, updateEvent } from '../api/client'
+import {
+  clearToken,
+  createEvent,
+  deleteEvent,
+  getStats,
+  listEvents,
+  updateEvent,
+} from '../api/client'
 
 // backend sends LocalDateTime with no zone, so this reads as local time
 function formatTime(value: string): string {
@@ -91,6 +99,7 @@ function DashboardPage() {
   const [statsError, setStatsError] = useState<string | null>(null)
   // bumped after each create, edit and delete so the stats effect runs again
   const [statsVersion, setStatsVersion] = useState(0)
+  const navigate = useNavigate()
 
   // runs on mount and again whenever filters changes. ignore is flipped in cleanup so a slow
   // response for an older filter set cannot overwrite the list after a newer one already landed
@@ -129,6 +138,13 @@ function DashboardPage() {
       ignore = true
     }
   }, [statsVersion])
+
+  // jwt is stateless, so there is no server session to end. dropping the token is the logout
+  // replace keeps /dashboard out of history, so Back does not land on a page that only redirects
+  function handleLogout() {
+    clearToken()
+    navigate('/login', { replace: true })
+  }
 
   function updateField(field: TextField, value: string) {
     setForm((current) => ({ ...current, [field]: value }))
@@ -251,7 +267,12 @@ function DashboardPage() {
 
   return (
     <main className="dashboard">
-      <h1>Events</h1>
+      <header className="dashboard-header">
+        <h1>Events</h1>
+        <button type="button" onClick={handleLogout}>
+          Log out
+        </button>
+      </header>
 
       <section className="event-stats">
         <h2>Stats</h2>
