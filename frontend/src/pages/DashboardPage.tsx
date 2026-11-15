@@ -468,7 +468,7 @@ function DashboardPage() {
                 <td>{event.severity}</td>
                 <td>{event.incidentStatus}</td>
                 <td>{event.sourceName ?? ''}</td>
-                <td>{formatTime(event.eventTimestamp ?? event.timeCreated)}</td>
+                <td>{event.eventTimestamp ? formatTime(event.eventTimestamp) : 'Unknown'}</td>
                 <td>
                   <button type="button" onClick={() => startEdit(event)}>
                     Edit
