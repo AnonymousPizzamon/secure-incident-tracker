@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    # tests hit real postgres, same db name and user as application.properties
+    # https://docs.github.com/en/actions/tutorials/use-containerized-services/create-postgresql-service-containers
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: app_db
+          POSTGRES_USER: app_user
+          # throwaway credentials
+          POSTGRES_PASSWORD: ci_password
+        # steps wait until pg_isready, fixes timing bug where it runs before pg is ready
+        options: >-
+          --health-cmd "pg_isready -U app_user -d app_db"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      # compile, test, package
+      - name: Build and test
+        run: ./mvnw --batch-mode verify
+        env:
+          DB_PASSWORD: ci_password
